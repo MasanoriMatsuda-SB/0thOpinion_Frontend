@@ -4,6 +4,7 @@
 import { useEffect, useState, useContext } from 'react';
 import apiClient from '../../lib/apiClient';
 import { AuthContext } from '../../context/AuthContext';
+import axios, { AxiosError } from 'axios';
 
 interface Pet {
   Pet_id: number;
@@ -25,9 +26,21 @@ export default function PetListPage() {
       try {
         const response = await apiClient.get('/pets/');
         setPets(response.data.pets);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('ペット一覧取得エラー:', err);
-        setError('ペット一覧の取得に失敗しました。');
+        if (axios.isAxiosError(err)) {
+          // AxiosErrorの場合
+          const axiosErr = err as AxiosError;
+          const data = axiosErr.response?.data as { message?: string };
+          if (data?.message) {
+            setError(`ペット一覧の取得に失敗しました: ${data.message}`);
+          } else {
+            setError('ペット一覧の取得に失敗しました。サーバーエラーが発生しています。');
+          }
+        } else {
+          // 予期しないエラー
+          setError('ペット一覧の取得に失敗しました。');
+        }
       } finally {
         setLoading(false);
       }

@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import apiClient from '../../lib/apiClient';
 import { useRouter } from 'next/router';
+import axios, { AxiosError } from 'axios';
 
 export default function AddPetPage() {
   const [petName, setPetName] = useState('');
@@ -25,11 +26,19 @@ export default function AddPetPage() {
       });
       alert('ペットの登録に成功しました！');
       router.push('/'); // ホームページにリダイレクト
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('ペット登録エラー:', error);
-      if (error.response && error.response.data && error.response.data.message) {
-        alert(`登録に失敗しました: ${error.response.data.message}`);
+      if (axios.isAxiosError(error)) {
+        // AxiosErrorの場合、responseデータに安全にアクセス
+        const axiosErr = error as AxiosError;
+        const data = axiosErr.response?.data as { message?: string };
+        if (data?.message) {
+          alert(`登録に失敗しました: ${data.message}`);
+        } else {
+          alert('登録に失敗しました。再度お試しください。');
+        }
       } else {
+        // AxiosError以外の予期しないエラー
         alert('登録に失敗しました。再度お試しください。');
       }
     }

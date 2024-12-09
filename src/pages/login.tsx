@@ -4,6 +4,7 @@
 import { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useRouter } from 'next/router';
+import axios, { AxiosError } from 'axios';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -17,8 +18,19 @@ export default function LoginPage() {
       await login(email, password);
       alert('ログインに成功しました！');
       router.push('/'); // ホームページにリダイレクト
-    } catch (error) {
-      alert('ログインに失敗しました。');
+    } catch (error: unknown) {
+      console.error('ログインエラー:', error);
+      if (axios.isAxiosError(error)) {
+        const axiosErr = error as AxiosError;
+        const data = axiosErr.response?.data as { message?: string };
+        if (data?.message) {
+          alert(`ログインに失敗しました: ${data.message}`);
+        } else {
+          alert('ログインに失敗しました。サーバーエラーが発生しています。');
+        }
+      } else {
+        alert('ログインに失敗しました。再度お試しください。');
+      }
     }
   };
 

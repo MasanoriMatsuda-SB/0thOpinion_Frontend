@@ -4,6 +4,7 @@
 import { useEffect, useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import apiClient from '../lib/apiClient';
+import axios, { AxiosError } from 'axios';
 
 interface Pet {
   Pet_id: number;
@@ -28,9 +29,14 @@ export default function ConsultationPage() {
       try {
         const res = await apiClient.get('/pets/');
         setPets(res.data.pets);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('ペット一覧取得エラー:', err);
-        setError('ペット一覧の取得に失敗しました。');
+        // Axiosエラーかどうかを判定
+        if (axios.isAxiosError(err)) {
+          setError('ペット一覧の取得に失敗しました。サーバーエラーが発生しています。');
+        } else {
+          setError('ペット一覧の取得に失敗しました。');
+        }
       }
     };
 
@@ -64,10 +70,15 @@ export default function ConsultationPage() {
       });
 
       setResponse(res.data.AI_answer);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('症状相談エラー:', err);
-      if (err.response && err.response.data && err.response.data.message) {
-        setError(`相談に失敗しました: ${err.response.data.message}`);
+      if (axios.isAxiosError(err)) {
+        const axiosErr = err as AxiosError;
+        if (axiosErr.response && axiosErr.response.data && (axiosErr.response.data as { message?: string }).message) {
+          setError(`相談に失敗しました: ${(axiosErr.response.data as { message: string }).message}`);
+        } else {
+          setError('相談に失敗しました。再度お試しください。');
+        }
       } else {
         setError('相談に失敗しました。再度お試しください。');
       }
