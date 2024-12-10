@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start -p 8080 --hostname 0.0.0.0",
-    "lint": "next lint"
+    "lint": "next lint",
+    "startAzure": "./node_modules/next/dist/bin/next start"
   },
   "dependencies": {
     "axios": "^1.7.9",
