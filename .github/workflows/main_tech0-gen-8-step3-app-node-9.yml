@@ -24,6 +24,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      # ↓ require-hookをインストールする例（非推奨）
+      - name: Install require-hook
+        run: npm install require-hook
+
       - name: Build
         run: npm run build
 
