@@ -1,39 +1,67 @@
 // src/pages/pets/add.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import apiClient from '../../lib/apiClient';
 import { useRouter } from 'next/router';
 import axios, { AxiosError } from 'axios';
+
+interface Disease {
+  disease_id: number;
+  disease_name: string;
+}
 
 export default function AddPetPage() {
   const [petName, setPetName] = useState('');
   const [gender, setGender] = useState<'M' | 'F'>('M');
   const [birthDate, setBirthDate] = useState('');
   const [neuterSpay, setNeuterSpay] = useState<boolean>(false);
-  const [diseaseId, setDiseaseId] = useState<number | ''>('');
+  const [diseaseId, setDiseaseId] = useState<number | 'none'>('none'); // 初期値を 'none' に設定
+  const [diseases, setDiseases] = useState<Disease[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false); // 追加: 登録中の状態を管理
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchDiseases = async () => {
+      try {
+        const response = await apiClient.get<{ diseases: Disease[] }>('/diseases/');
+        setDiseases(response.data.diseases);
+        setIsLoading(false);
+      } catch (err) {
+        console.error('疾病リストの取得エラー:', err);
+        setError('疾病リストの取得に失敗しました。');
+        setIsLoading(false);
+      }
+    };
+
+    fetchDiseases();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 追加: 登録処理開始時に isSubmitting を true に設定
+    setIsSubmitting(true);
+
     try {
       await apiClient.post('/pets/', {
         Pet_name: petName,
         Gender: gender,
         Birth_date: birthDate,
-        Neuter_Spay: neuterSpay,
-        disease_id: diseaseId,
+        Neuter_spay: neuterSpay,
+        disease_id: diseaseId === 'none' ? null : diseaseId,
       });
       alert('ペットの登録に成功しました！');
       router.push('/'); // ホームページにリダイレクト
-    } catch (error: unknown) {
+    } catch (error: unknown) { // エラーを unknown 型としてキャッチ
       console.error('ペット登録エラー:', error);
       if (axios.isAxiosError(error)) {
         // AxiosErrorの場合、responseデータに安全にアクセス
-        const axiosErr = error as AxiosError;
-        const data = axiosErr.response?.data as { message?: string };
-        if (data?.message) {
-          alert(`登録に失敗しました: ${data.message}`);
+        const axiosErr = error as AxiosError<{ message?: string }>;
+        if (axiosErr.response?.data?.message) {
+          alert(`登録に失敗しました: ${axiosErr.response.data.message}`);
         } else {
           alert('登録に失敗しました。再度お試しください。');
         }
@@ -41,8 +69,41 @@ export default function AddPetPage() {
         // AxiosError以外の予期しないエラー
         alert('登録に失敗しました。再度お試しください。');
       }
+    } finally {
+      // 追加: 登録処理終了後に isSubmitting を false にリセット
+      setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-32 w-32"></div>
+        <style jsx>{`
+          .loader {
+            border-top-color: #3498db;
+            animation: spin 1s linear infinite;
+          }
+          @keyframes spin {
+            0% {
+              transform: rotate(0deg);
+            }
+            100% {
+              transform: rotate(360deg);
+            }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-red-500">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-white p-4">
@@ -102,23 +163,31 @@ export default function AddPetPage() {
 
         {/* disease_id */}
         <div className="mb-4">
-          <label className="block mb-1 text-black">病気ID</label>
-          <input
-            type="number"
+          <label className="block mb-1 text-black">持病</label>
+          <select
             value={diseaseId}
-            onChange={(e) => setDiseaseId(Number(e.target.value))}
+            onChange={(e) => setDiseaseId(e.target.value === 'none' ? 'none' : Number(e.target.value))}
             required
             className="w-full px-3 py-2 border rounded text-black"
-            placeholder="例: 1"
-            min="1"
-          />
+          >
+            <option value="none">持病無し</option>
+            {diseases.map((disease) => (
+              <option key={disease.disease_id} value={disease.disease_id}>
+                {disease.disease_name}
+              </option>
+            ))}
+          </select>
         </div>
 
+        {/* 追加: 登録ボタン */}
         <button
           type="submit"
-          className="w-full px-3 py-2 text-white bg-green-500 rounded hover:bg-green-600"
+          className={`w-full px-3 py-2 text-white rounded ${
+            isSubmitting ? 'bg-green-300 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'
+          }`}
+          disabled={isSubmitting} // 追加: ボタンを無効化
         >
-          登録
+          {isSubmitting ? '登録中...' : '登録'} {/* 追加: テキストの変更 */}
         </button>
       </form>
     </div>

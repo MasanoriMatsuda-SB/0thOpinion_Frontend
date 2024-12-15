@@ -63,8 +63,8 @@ export default function HomePage() {
         <Image
           src="/Nishitetsu_logo_vector.png"
           alt="Nishitetsu Logo"
-          width={300} // 必要に応じてサイズ調整
-          height={100} // 必要に応じてサイズ調整
+          width={150} // 必要に応じてサイズ調整
+          height={50} // 必要に応じてサイズ調整
           className="opacity-75 hover:opacity-100 transition-opacity"
         />
       </div>
