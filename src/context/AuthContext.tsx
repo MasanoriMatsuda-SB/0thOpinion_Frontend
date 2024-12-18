@@ -63,22 +63,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Axiosのデフォルトヘッダーにトークンを設定
         apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         try {
-          // バックエンドからユーザー情報を取得（例: /users/me エンドポイント）
+          // バックエンドからユーザー情報を取得
           const response = await apiClient.get('/users/me');
           setUser({
             email: response.data.email,
             screenName: response.data.screen_name,
           });
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error('ユーザー情報取得エラー:', error);
-          // 401エラー時など、認証失敗した場合はログアウトを実行
-          if (error.response?.status === 401) {
-            // ログインしていない状態もしくはトークンが無効の場合、ログアウト処理
+
+          // 型チェックを行ってエラー情報を取得
+          if (
+            typeof error === 'object' &&
+            error !== null &&
+            'response' in error &&
+            typeof error.response === 'object' &&
+            error.response !== null &&
+            'status' in error.response &&
+            error.response.status === 401
+          ) {
+            // 認証失敗の場合はログアウト処理
             logout();
-          } else {
-            // その他のエラーはログアウトせず、状況に応じてエラーハンドリング
-            // 必要なら何もせずsetUser(null)やアラートを出してもよい
-            // setUser(null);
           }
         }
       }

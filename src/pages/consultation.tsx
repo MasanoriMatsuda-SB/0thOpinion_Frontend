@@ -89,7 +89,6 @@ export default function ConsultationPage() {
 
   const handleAnswerSubmit = () => {
     const currentQuestion = questions[currentQuestionIndex];
-    // number用の条件削除済み。すべてchoiceかtextの場合、textで空白の場合はreturn
     if (!inputValue.trim() && currentQuestion.type !== 'choice') return;
 
     setResponses((prev) => [
@@ -138,7 +137,6 @@ export default function ConsultationPage() {
       return;
     }
 
-    // responsesをテキスト形式に変換
     const contentText = responses
       .map((res) => `${res.question}: ${res.answer}`)
       .join('\n');
@@ -154,8 +152,12 @@ export default function ConsultationPage() {
         Content: contentText,
       });
       setApiResponse(res.data.AI_answer);
-    } catch (err) {
-      console.error('エラー詳細:', (err as any).response?.data || (err as any).message);
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        console.error('エラー詳細:', err.response?.data || err.message);
+      } else {
+        console.error('エラー詳細:', err instanceof Error ? err.message : String(err));
+      }
       setError('相談に失敗しました。再度お試しください。');
     } finally {
       setWizardLoading(false);
