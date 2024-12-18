@@ -69,9 +69,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             email: response.data.email,
             screenName: response.data.screen_name,
           });
-        } catch (error) {
+        } catch (error: any) {
           console.error('ユーザー情報取得エラー:', error);
-          logout();
+          // 401エラー時など、認証失敗した場合はログアウトを実行
+          if (error.response?.status === 401) {
+            // ログインしていない状態もしくはトークンが無効の場合、ログアウト処理
+            logout();
+          } else {
+            // その他のエラーはログアウトせず、状況に応じてエラーハンドリング
+            // 必要なら何もせずsetUser(null)やアラートを出してもよい
+            // setUser(null);
+          }
         }
       }
     };
