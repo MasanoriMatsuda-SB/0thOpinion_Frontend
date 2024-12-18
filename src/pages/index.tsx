@@ -7,7 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image'; // Next.jsのImageコンポーネントをインポート
 
 export default function HomePage() {
-  const { user, logout } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white p-4 relative">
