@@ -1,7 +1,7 @@
 // src/pages/pets/add.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import apiClient from '../../lib/apiClient';
 import { useRouter } from 'next/router';
 import axios, { AxiosError } from 'axios';
@@ -21,6 +21,7 @@ export default function AddPetPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false); // 追加: 登録中の状態を管理
+  const [imageFile, setImageFile] = useState<File | null>(null); // 追加: 画像ファイルを管理
   const router = useRouter();
 
   useEffect(() => {
@@ -39,6 +40,14 @@ export default function AddPetPage() {
     fetchDiseases();
   }, []);
 
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0]);
+    } else {
+      setImageFile(null);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -46,12 +55,23 @@ export default function AddPetPage() {
     setIsSubmitting(true);
 
     try {
-      await apiClient.post('/pets/', {
-        Pet_name: petName,
-        Gender: gender,
-        Birth_date: birthDate,
-        Neuter_spay: neuterSpay,
-        disease_id: diseaseId === 'none' ? null : diseaseId,
+      // Create a FormData object
+      const formData = new FormData();
+      formData.append('Pet_name', petName);
+      formData.append('Gender', gender);
+      formData.append('Birth_date', birthDate);
+      formData.append('Neuter_Spay', neuterSpay.toString());
+      formData.append('disease_id', diseaseId === 'none' ? '' : diseaseId.toString());
+
+      if (imageFile) {
+        formData.append('Image', imageFile); // 追加: 画像ファイルをフォームデータに追加
+      }
+
+      // Send the form data
+      await apiClient.post('/pets/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
       alert('ペットの登録に成功しました！');
       router.push('/'); // ホームページにリダイレクト
@@ -177,6 +197,20 @@ export default function AddPetPage() {
               </option>
             ))}
           </select>
+        </div>
+
+        {/* 追加: 画像アップロード */}
+        <div className="mb-4">
+          <label className="block mb-1 text-black">画像 (任意)</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="w-full px-3 py-2 border rounded text-black"
+          />
+          {imageFile && (
+            <p className="mt-2 text-sm text-gray-600">選択されたファイル: {imageFile.name}</p>
+          )}
         </div>
 
         {/* 追加: 登録ボタン */}

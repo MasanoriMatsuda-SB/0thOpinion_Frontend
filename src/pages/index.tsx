@@ -14,12 +14,9 @@ export default function HomePage() {
       {/* ヘッディング部分 */}
       <div className="flex flex-col items-center mb-6">
         <p className="text-3xl text-gray-700 mb-4">ペットのための予診・相談サービス</p>
-        <Image
-          src="/ゼロオピロゴマーク_2.png" // 公開ディレクトリ（/public）に保存された画像パス
-          alt="0thOpinion Logo"
-          width={900} // 必要に応じてサイズ調整
-          height={300} // 必要に応じてサイズ調整
-        />
+        <h1 className="text-7xl text-gray-600 font-sans">
+          0th Opinion - ゼロオピ
+        </h1>
       </div>
 
       {user ? (
@@ -32,27 +29,30 @@ export default function HomePage() {
             </Link>
 
             {/* 症状を相談するボタン */}
-            <Link href="/consultation" className="w-64 px-6 py-3 text-center text-white bg-blue-500 rounded hover:bg-blue-600">
+            <Link href="/consultation" className="w-64 px-6 py-3 text-center text-white bg-red-400 rounded hover:bg-red-500">
               症状を相談する
             </Link>
 
-            {/* ログアウトボタン */}
-            <button
-              onClick={logout}
-              className="w-64 px-6 py-3 text-center text-white bg-red-500 rounded hover:bg-red-600"
-            >
-              ログアウト
-            </button>
+            {/* 知恵袋（開発中）ボタン */}
+            <Link href="/" className="w-64 px-6 py-3 text-center text-black bg-gray-400 rounded hover:bg-gray-500">
+              知恵袋（開発中）
+            </Link>
+
+             {/* 健康辞典（開発中）ボタン */}
+             <Link href="/" className="w-64 px-6 py-3 text-center text-black bg-gray-400 rounded hover:bg-gray-500">
+              健康辞典（開発中）
+            </Link>
+
           </div>
         </>
       ) : (
         <>
-          <div className="flex space-x-4">
-            <Link href="/login" className="px-6 py-3 text-white bg-blue-500 rounded hover:bg-blue-600">
-              ログイン
+          <div className="flex flex-col space-y-4">
+            <Link href="/login" className="block w-64 px-10 py-3 text-center text-white bg-orange-300 rounded hover:bg-orange-400">
+             ログイン
             </Link>
-            <Link href="/register" className="px-6 py-3 text-white bg-green-500 rounded hover:bg-green-600">
-              ユーザー登録
+            <Link href="/register" className="block w-64 px-10 py-3 text-center text-white bg-green-400 rounded hover:bg-green-500">
+            はじめての方
             </Link>
           </div>
         </>

@@ -8,7 +8,7 @@ export default function Header() {
   const { user, logout } = useContext(AuthContext);
 
   return (
-    <header className="flex items-center justify-between px-6 py-6 bg-white border-b border-black shadow-md h-24">
+    <header className="fixed top-0 left-0 w-full flex items-center justify-between px-6 py-6 bg-white border-b border-black shadow-md h-24 z-50">
       {/* ロゴ画像 */}
       <Link href="/">
         <Image
