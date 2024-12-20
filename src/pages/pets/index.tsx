@@ -36,6 +36,7 @@ export default function PetListPage() {
   // 画像アップロード用のステート
   const [uploadingImagePetId, setUploadingImagePetId] = useState<number | null>(null);
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [isImageUploading, setIsImageUploading] = useState<boolean>(false); // アップロード中かどうか
 
   // ペット一覧取得
   useEffect(() => {
@@ -77,7 +78,6 @@ export default function PetListPage() {
         setDiseases(response.data.diseases);
       } catch (err) {
         console.error('疾病リスト取得エラー:', err);
-        // エラー発生時も特に影響しないようにするため、エラー状態はセットしない場合も可
       }
     };
 
@@ -145,6 +145,7 @@ export default function PetListPage() {
       return;
     }
 
+    setIsImageUploading(true); // アップロード開始時
     const formData = new FormData();
     formData.append('Image', selectedImageFile);
 
@@ -162,6 +163,8 @@ export default function PetListPage() {
     } catch (err) {
       console.error('画像登録エラー:', err);
       alert('画像登録に失敗しました。再度お試しください。');
+    } finally {
+      setIsImageUploading(false); // アップロード終了時
     }
   };
 
@@ -228,9 +231,14 @@ export default function PetListPage() {
                           <button
                             type="button"
                             onClick={() => handleImageUpload(pet.Pet_id)}
-                            className="px-3 py-1 text-white bg-blue-500 rounded hover:bg-blue-600"
+                            className={`px-3 py-1 text-white rounded ${
+                              isImageUploading
+                                ? 'bg-blue-300 cursor-not-allowed'
+                                : 'bg-blue-500 hover:bg-blue-600'
+                            }`}
+                            disabled={isImageUploading}
                           >
-                            アップロード
+                            {isImageUploading ? 'アップロード中...' : 'アップロード'}
                           </button>
                           <button
                             type="button"

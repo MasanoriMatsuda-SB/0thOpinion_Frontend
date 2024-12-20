@@ -16,12 +16,12 @@ export default function AddPetPage() {
   const [gender, setGender] = useState<'M' | 'F'>('M');
   const [birthDate, setBirthDate] = useState('');
   const [neuterSpay, setNeuterSpay] = useState<boolean>(false);
-  const [diseaseId, setDiseaseId] = useState<number | 'none'>('none'); // 初期値を 'none' に設定
+  const [diseaseId, setDiseaseId] = useState<number | 'none'>('none');
   const [diseases, setDiseases] = useState<Disease[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false); // 追加: 登録中の状態を管理
-  const [imageFile, setImageFile] = useState<File | null>(null); // 追加: 画像ファイルを管理
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -50,12 +50,9 @@ export default function AddPetPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // 追加: 登録処理開始時に isSubmitting を true に設定
     setIsSubmitting(true);
 
     try {
-      // Create a FormData object
       const formData = new FormData();
       formData.append('Pet_name', petName);
       formData.append('Gender', gender);
@@ -64,21 +61,19 @@ export default function AddPetPage() {
       formData.append('disease_id', diseaseId === 'none' ? '' : diseaseId.toString());
 
       if (imageFile) {
-        formData.append('Image', imageFile); // 追加: 画像ファイルをフォームデータに追加
+        formData.append('Image', imageFile);
       }
 
-      // Send the form data
       await apiClient.post('/pets/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
       alert('ペットの登録に成功しました！');
-      router.push('/'); // ホームページにリダイレクト
-    } catch (error: unknown) { // エラーを unknown 型としてキャッチ
+      router.push('/');
+    } catch (error: unknown) {
       console.error('ペット登録エラー:', error);
       if (axios.isAxiosError(error)) {
-        // AxiosErrorの場合、responseデータに安全にアクセス
         const axiosErr = error as AxiosError<{ message?: string }>;
         if (axiosErr.response?.data?.message) {
           alert(`登録に失敗しました: ${axiosErr.response.data.message}`);
@@ -86,11 +81,9 @@ export default function AddPetPage() {
           alert('登録に失敗しました。再度お試しください。');
         }
       } else {
-        // AxiosError以外の予期しないエラー
         alert('登録に失敗しました。再度お試しください。');
       }
     } finally {
-      // 追加: 登録処理終了後に isSubmitting を false にリセット
       setIsSubmitting(false);
     }
   };
@@ -126,7 +119,7 @@ export default function AddPetPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-white p-4">
+    <div className="pt-24 flex items-center justify-center min-h-screen bg-white p-4">
       <form onSubmit={handleSubmit} className="w-full max-w-md p-6 bg-gray-100 rounded shadow-md">
         <h1 className="mb-6 text-2xl font-bold text-black">ペット登録</h1>
 
@@ -199,7 +192,7 @@ export default function AddPetPage() {
           </select>
         </div>
 
-        {/* 追加: 画像アップロード */}
+        {/* Image */}
         <div className="mb-4">
           <label className="block mb-1 text-black">画像 (任意)</label>
           <input
@@ -213,15 +206,14 @@ export default function AddPetPage() {
           )}
         </div>
 
-        {/* 追加: 登録ボタン */}
         <button
           type="submit"
           className={`w-full px-3 py-2 text-white rounded ${
             isSubmitting ? 'bg-green-300 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'
           }`}
-          disabled={isSubmitting} // 追加: ボタンを無効化
+          disabled={isSubmitting}
         >
-          {isSubmitting ? '登録中...' : '登録'} {/* 追加: テキストの変更 */}
+          {isSubmitting ? '登録中...' : '登録'}
         </button>
       </form>
     </div>
